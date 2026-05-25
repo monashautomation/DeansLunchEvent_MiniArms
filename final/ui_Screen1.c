@@ -5,11 +5,30 @@
 
 #include "ui.h"
 
+// Monash Automation colour palette
+#define MA_BG           lv_color_hex(0x020817)
+#define MA_PANEL        lv_color_hex(0x010d1f)
+#define MA_BLUE         lv_color_hex(0x016ccc)
+#define MA_BLUE_LIGHT   lv_color_hex(0x4491f7)
+#define MA_TEAL         lv_color_hex(0x59e9cb)
+#define MA_DIM          lv_color_hex(0x64748B)
+
 lv_obj_t *uic_arm_open;
 lv_obj_t *uic_arm_close;
-lv_obj_t *ui_Screen1 = NULL;lv_obj_t *ui_Panel1 = NULL;lv_obj_t *ui_Action1 = NULL;lv_obj_t *ui_Image1 = NULL;lv_obj_t *ui_Action2 = NULL;lv_obj_t *ui_Image2 = NULL;lv_obj_t *ui_Action3 = NULL;lv_obj_t *ui_Image3 = NULL;lv_obj_t *ui_Action4 = NULL;lv_obj_t *ui_Image4 = NULL;lv_obj_t *ui_arm_close = NULL;lv_obj_t *ui_arm_open = NULL;lv_obj_t *ui_Button1 = NULL;lv_obj_t *ui_Label1 = NULL;lv_obj_t *ui_Image5 = NULL;
+lv_obj_t *ui_Screen1  = NULL;
+lv_obj_t *ui_Panel1   = NULL;
+lv_obj_t *ui_Action1  = NULL; lv_obj_t *ui_Image1 = NULL;
+lv_obj_t *ui_Action2  = NULL; lv_obj_t *ui_Image2 = NULL;
+lv_obj_t *ui_Action3  = NULL; lv_obj_t *ui_Image3 = NULL;
+lv_obj_t *ui_Action4  = NULL; lv_obj_t *ui_Image4 = NULL;
+lv_obj_t *ui_arm_close = NULL;
+lv_obj_t *ui_arm_open  = NULL;
+lv_obj_t *ui_Button1  = NULL;
+lv_obj_t *ui_Label1   = NULL;
+lv_obj_t *ui_Image5   = NULL;
 
-static lv_timer_t *gripper_btn_timer = NULL;
+static lv_obj_t    *ui_GripperStateLabel = NULL;
+static lv_timer_t  *gripper_btn_timer    = NULL;
 
 static void gripper_btn_enable_timer_cb(lv_timer_t *timer) {
     lv_obj_clear_state(ui_Button1, LV_STATE_DISABLED);
@@ -17,242 +36,338 @@ static void gripper_btn_enable_timer_cb(lv_timer_t *timer) {
     gripper_btn_timer = NULL;
 }
 
-// event funtions
-void ui_event_Action1( lv_event_t * e) {
-    lv_event_code_t event_code = lv_event_get_code(e);
-
-if ( event_code == LV_EVENT_CLICKED) {
-      action1_event( e );
-}
-}
-
-void ui_event_Action2( lv_event_t * e) {
-    lv_event_code_t event_code = lv_event_get_code(e);
-
-if ( event_code == LV_EVENT_CLICKED) {
-      action2_event( e );
-}
+// Apply the shared monotone button style
+static void style_action_btn(lv_obj_t *btn) {
+    lv_obj_set_style_bg_color(btn,     MA_BG,         LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(btn,       255,            LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(btn, MA_BLUE,        LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(btn, 1,              LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(btn,   70,             LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(btn,       8,              LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_width(btn, 0,              LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(btn,     MA_PANEL,       LV_PART_MAIN | LV_STATE_PRESSED);
+    lv_obj_set_style_border_color(btn, MA_BLUE_LIGHT,  LV_PART_MAIN | LV_STATE_PRESSED);
+    lv_obj_set_style_border_opa(btn,   200,            LV_PART_MAIN | LV_STATE_PRESSED);
 }
 
-void ui_event_Action3( lv_event_t * e) {
-    lv_event_code_t event_code = lv_event_get_code(e);
-
-if ( event_code == LV_EVENT_CLICKED) {
-      action3_event( e );
-}
-}
-
-void ui_event_Action4( lv_event_t * e) {
-    lv_event_code_t event_code = lv_event_get_code(e);
-
-if ( event_code == LV_EVENT_CLICKED) {
-      action4_event( e );
-}
+// Add a monospaced-style label to an action button
+static void add_btn_label(lv_obj_t *btn, const char *text) {
+    lv_obj_t *lbl = lv_label_create(btn);
+    lv_label_set_text(lbl, text);
+    lv_obj_align(lbl, LV_ALIGN_BOTTOM_MID, 0, -12);
+    lv_obj_set_style_text_color(lbl,         MA_BLUE_LIGHT, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_letter_space(lbl,  2,             LV_PART_MAIN | LV_STATE_DEFAULT);
 }
 
-void ui_event_Button1( lv_event_t * e) {
-    lv_event_code_t event_code = lv_event_get_code(e);lv_obj_t * target = lv_event_get_target(e);
+// event functions
+void ui_event_Action1(lv_event_t *e) {
+    if (lv_event_get_code(e) == LV_EVENT_CLICKED) action1_event(e);
+}
+void ui_event_Action2(lv_event_t *e) {
+    if (lv_event_get_code(e) == LV_EVENT_CLICKED) action2_event(e);
+}
+void ui_event_Action3(lv_event_t *e) {
+    if (lv_event_get_code(e) == LV_EVENT_CLICKED) action3_event(e);
+}
+void ui_event_Action4(lv_event_t *e) {
+    if (lv_event_get_code(e) == LV_EVENT_CLICKED) action4_event(e);
+}
 
-if ( event_code == LV_EVENT_VALUE_CHANGED ) {
-    if (!lv_obj_has_state(target, LV_STATE_DISABLED)) {
-        lv_obj_add_state(target, LV_STATE_DISABLED);
-        if (gripper_btn_timer != NULL) {
-            lv_timer_del(gripper_btn_timer);
+void ui_event_Button1(lv_event_t *e) {
+    lv_event_code_t code   = lv_event_get_code(e);
+    lv_obj_t       *target = lv_event_get_target(e);
+
+    if (code == LV_EVENT_VALUE_CHANGED) {
+        if (!lv_obj_has_state(target, LV_STATE_DISABLED)) {
+            lv_obj_add_state(target, LV_STATE_DISABLED);
+            if (gripper_btn_timer != NULL) lv_timer_del(gripper_btn_timer);
+            gripper_btn_timer = lv_timer_create(gripper_btn_enable_timer_cb, 500, NULL);
         }
-        gripper_btn_timer = lv_timer_create(gripper_btn_enable_timer_cb, 3000, NULL);
+    }
+    if (code == LV_EVENT_VALUE_CHANGED && lv_obj_has_state(target, LV_STATE_CHECKED)) {
+        _ui_flag_modify(ui_arm_open,  LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
+        _ui_flag_modify(ui_arm_close, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+        if (ui_GripperStateLabel) lv_label_set_text(ui_GripperStateLabel, "OPEN");
+        open_gripper(e);
+    }
+    if (code == LV_EVENT_VALUE_CHANGED && !lv_obj_has_state(target, LV_STATE_CHECKED)) {
+        _ui_flag_modify(ui_arm_close, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
+        _ui_flag_modify(ui_arm_open,  LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+        if (ui_GripperStateLabel) lv_label_set_text(ui_GripperStateLabel, "CLOSED");
+        close_gripper(e);
     }
 }
 
-if ( event_code == LV_EVENT_VALUE_CHANGED &&  lv_obj_has_state(target,LV_STATE_CHECKED)  ) {
-      _ui_flag_modify( ui_arm_open, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
-      _ui_flag_modify( ui_arm_close, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
-      open_gripper( e );
+// build functions
+void ui_Screen1_screen_init(void) {
+    // ── Screen ───────────────────────────────────────────────────────
+    ui_Screen1 = lv_obj_create(NULL);
+    lv_obj_clear_flag(ui_Screen1, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_color(ui_Screen1, MA_BG, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Screen1,   255,   LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // ── Top bar ──────────────────────────────────────────────────────
+    lv_obj_t *topbar = lv_obj_create(ui_Screen1);
+    lv_obj_set_size(topbar, 800, 32);
+    lv_obj_set_pos(topbar, 0, 0);
+    lv_obj_clear_flag(topbar, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_color(topbar,     MA_BG,  LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(topbar,       255,    LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(topbar,       0,      LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(topbar,      0,      LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_side(topbar,  LV_BORDER_SIDE_BOTTOM, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(topbar, 1,      LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(topbar, MA_BLUE, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(topbar,   30,     LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // Logo in top bar
+    ui_Image5 = lv_img_create(topbar);
+    lv_img_set_src(ui_Image5, &ui_img_malogo_png);
+    lv_obj_set_size(ui_Image5, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_pos(ui_Image5, 10, 2);
+    lv_obj_add_flag(ui_Image5, LV_OBJ_FLAG_ADV_HITTEST);
+    lv_obj_clear_flag(ui_Image5, LV_OBJ_FLAG_SCROLLABLE);
+    lv_img_set_zoom(ui_Image5, 160);
+    lv_obj_set_style_bg_color(ui_Image5, MA_BG, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Image5,   255,   LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // "MINI ARMS" subtitle
+    lv_obj_t *title_lbl = lv_label_create(topbar);
+    lv_label_set_text(title_lbl, "MINI ARMS");
+    lv_obj_set_pos(title_lbl, 140, 9);
+    lv_obj_set_style_text_color(title_lbl,        MA_BLUE_LIGHT, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_letter_space(title_lbl, 3,             LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // ESP-NOW status dot
+    lv_obj_t *status_dot = lv_obj_create(topbar);
+    lv_obj_set_size(status_dot, 8, 8);
+    lv_obj_set_pos(status_dot, 660, 12);
+    lv_obj_set_style_bg_color(status_dot,   MA_TEAL, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(status_dot,     255,     LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(status_dot,     4,       LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(status_dot, 0,     LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t *status_lbl = lv_label_create(topbar);
+    lv_label_set_text(status_lbl, "ESP-NOW");
+    lv_obj_set_pos(status_lbl, 674, 9);
+    lv_obj_set_style_text_color(status_lbl,        MA_TEAL, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_letter_space(status_lbl, 1,       LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // ── Action button panel (left) ───────────────────────────────────
+    ui_Panel1 = lv_obj_create(ui_Screen1);
+    lv_obj_set_size(ui_Panel1, 460, 410);
+    lv_obj_set_pos(ui_Panel1, 10, 38);
+    lv_obj_clear_flag(ui_Panel1, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_opa(ui_Panel1,     0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_Panel1, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(ui_Panel1,    0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_Panel1,     0, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // 2×2 grid dimensions inside ui_Panel1
+    static const int BTN_W = 222;
+    static const int BTN_H = 197;
+    static const int GAP   = 8;
+
+    // Action 1 — top-left
+    ui_Action1 = lv_btn_create(ui_Panel1);
+    lv_obj_set_size(ui_Action1, BTN_W, BTN_H);
+    lv_obj_set_pos(ui_Action1,  0, 0);
+    lv_obj_add_flag(ui_Action1,   LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_clear_flag(ui_Action1, LV_OBJ_FLAG_SCROLLABLE);
+    style_action_btn(ui_Action1);
+
+    ui_Image1 = lv_img_create(ui_Action1);
+    lv_img_set_src(ui_Image1, &ui_img_2043791660);
+    lv_obj_set_size(ui_Image1, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_align(ui_Image1, LV_ALIGN_CENTER, 0, -14);
+    lv_obj_add_flag(ui_Image1,   LV_OBJ_FLAG_ADV_HITTEST);
+    lv_obj_clear_flag(ui_Image1, LV_OBJ_FLAG_SCROLLABLE);
+    lv_img_set_angle(ui_Image1, -100);
+    lv_img_set_zoom(ui_Image1,  100);
+    lv_obj_set_style_img_recolor(ui_Image1,     MA_BLUE_LIGHT, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_img_recolor_opa(ui_Image1, 255,           LV_PART_MAIN | LV_STATE_DEFAULT);
+    add_btn_label(ui_Action1, "ACTION 1");
+
+    // Action 2 — top-right
+    ui_Action2 = lv_btn_create(ui_Panel1);
+    lv_obj_set_size(ui_Action2, BTN_W, BTN_H);
+    lv_obj_set_pos(ui_Action2,  BTN_W + GAP, 0);
+    lv_obj_add_flag(ui_Action2,   LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_clear_flag(ui_Action2, LV_OBJ_FLAG_SCROLLABLE);
+    style_action_btn(ui_Action2);
+
+    ui_Image2 = lv_img_create(ui_Action2);
+    lv_img_set_src(ui_Image2, &ui_img_195482244);
+    lv_obj_set_size(ui_Image2, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_align(ui_Image2, LV_ALIGN_CENTER, 0, -14);
+    lv_obj_add_flag(ui_Image2,   LV_OBJ_FLAG_ADV_HITTEST);
+    lv_obj_clear_flag(ui_Image2, LV_OBJ_FLAG_SCROLLABLE);
+    lv_img_set_zoom(ui_Image2, 90);
+    lv_obj_set_style_img_recolor(ui_Image2,     MA_BLUE_LIGHT, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_img_recolor_opa(ui_Image2, 255,           LV_PART_MAIN | LV_STATE_DEFAULT);
+    add_btn_label(ui_Action2, "ACTION 2");
+
+    // Action 3 — bottom-left
+    ui_Action3 = lv_btn_create(ui_Panel1);
+    lv_obj_set_size(ui_Action3, BTN_W, BTN_H);
+    lv_obj_set_pos(ui_Action3,  0, BTN_H + GAP);
+    lv_obj_add_flag(ui_Action3,   LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_clear_flag(ui_Action3, LV_OBJ_FLAG_SCROLLABLE);
+    style_action_btn(ui_Action3);
+
+    ui_Image3 = lv_img_create(ui_Action3);
+    lv_img_set_src(ui_Image3, &ui_img_swap_png);
+    lv_obj_set_size(ui_Image3, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_align(ui_Image3, LV_ALIGN_CENTER, 0, -14);
+    lv_obj_add_flag(ui_Image3,   LV_OBJ_FLAG_ADV_HITTEST);
+    lv_obj_clear_flag(ui_Image3, LV_OBJ_FLAG_SCROLLABLE);
+    lv_img_set_zoom(ui_Image3, 250);
+    lv_obj_set_style_img_recolor(ui_Image3,     MA_BLUE_LIGHT, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_img_recolor_opa(ui_Image3, 255,           LV_PART_MAIN | LV_STATE_DEFAULT);
+    add_btn_label(ui_Action3, "ACTION 3");
+
+    // Action 4 — bottom-right
+    ui_Action4 = lv_btn_create(ui_Panel1);
+    lv_obj_set_size(ui_Action4, BTN_W, BTN_H);
+    lv_obj_set_pos(ui_Action4,  BTN_W + GAP, BTN_H + GAP);
+    lv_obj_add_flag(ui_Action4,   LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_clear_flag(ui_Action4, LV_OBJ_FLAG_SCROLLABLE);
+    style_action_btn(ui_Action4);
+
+    ui_Image4 = lv_img_create(ui_Action4);
+    lv_img_set_src(ui_Image4, &ui_img_1842574513);
+    lv_obj_set_size(ui_Image4, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_align(ui_Image4, LV_ALIGN_CENTER, 0, -14);
+    lv_obj_add_flag(ui_Image4,   LV_OBJ_FLAG_ADV_HITTEST);
+    lv_obj_clear_flag(ui_Image4, LV_OBJ_FLAG_SCROLLABLE);
+    lv_img_set_zoom(ui_Image4, 110);
+    lv_obj_set_style_img_recolor(ui_Image4,     MA_BLUE_LIGHT, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_img_recolor_opa(ui_Image4, 255,           LV_PART_MAIN | LV_STATE_DEFAULT);
+    add_btn_label(ui_Action4, "ACTION 4");
+
+    // ── Vertical divider ─────────────────────────────────────────────
+    lv_obj_t *divider = lv_obj_create(ui_Screen1);
+    lv_obj_set_size(divider, 1, 410);
+    lv_obj_set_pos(divider, 478, 38);
+    lv_obj_set_style_bg_color(divider,   MA_BLUE, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(divider,     35,      LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(divider, 0,     LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(divider,     0,       LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // ── Gripper section (right panel, x 488–800) ─────────────────────
+    lv_obj_t *grip_hdr = lv_label_create(ui_Screen1);
+    lv_label_set_text(grip_hdr, "GRIPPER");
+    lv_obj_set_pos(grip_hdr, 496, 42);
+    lv_obj_set_style_text_color(grip_hdr,        MA_DIM, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_letter_space(grip_hdr, 3,      LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // Arm state images — centred in the right panel upper area
+    ui_arm_close = lv_img_create(ui_Screen1);
+    lv_img_set_src(ui_arm_close, &ui_img_closesmall3_png);
+    lv_obj_set_size(ui_arm_close, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_x(ui_arm_close, 168);
+    lv_obj_set_y(ui_arm_close, 50);
+    lv_obj_set_align(ui_arm_close, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_arm_close,   LV_OBJ_FLAG_ADV_HITTEST);
+    lv_obj_clear_flag(ui_arm_close, LV_OBJ_FLAG_SCROLLABLE);
+    lv_img_set_zoom(ui_arm_close, 600);
+    lv_obj_set_style_img_recolor(ui_arm_close,     MA_BLUE_LIGHT, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_img_recolor_opa(ui_arm_close, 210,           LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_arm_open = lv_img_create(ui_Screen1);
+    lv_img_set_src(ui_arm_open, &ui_img_opensmall3_png);
+    lv_obj_set_size(ui_arm_open, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_x(ui_arm_open, 168);
+    lv_obj_set_y(ui_arm_open, 30);
+    lv_obj_set_align(ui_arm_open, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_arm_open,   LV_OBJ_FLAG_HIDDEN | LV_OBJ_FLAG_ADV_HITTEST);
+    lv_obj_clear_flag(ui_arm_open, LV_OBJ_FLAG_SCROLLABLE);
+    lv_img_set_zoom(ui_arm_open, 700);
+    lv_obj_set_style_img_recolor(ui_arm_open,     MA_TEAL, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_img_recolor_opa(ui_arm_open, 220,     LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // Gripper state text (CLOSED / OPEN)
+    ui_GripperStateLabel = lv_label_create(ui_Screen1);
+    lv_label_set_text(ui_GripperStateLabel, "CLOSED");
+    lv_obj_set_pos(ui_GripperStateLabel, 608, 318);
+    lv_obj_set_style_text_color(ui_GripperStateLabel,        MA_TEAL, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_letter_space(ui_GripperStateLabel, 2,       LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // Toggle Gripper button
+    ui_Button1 = lv_btn_create(ui_Screen1);
+    lv_obj_set_size(ui_Button1, 295, 58);
+    lv_obj_set_pos(ui_Button1,  488, 390);
+    lv_obj_add_flag(ui_Button1,   LV_OBJ_FLAG_CHECKABLE | LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_clear_flag(ui_Button1, LV_OBJ_FLAG_SCROLLABLE);
+    // Default
+    lv_obj_set_style_bg_color(ui_Button1,     MA_BG,   LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Button1,       255,     LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_Button1, MA_BLUE, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_Button1, 1,       LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(ui_Button1,   110,     LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_Button1,       8,       LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_width(ui_Button1, 0,       LV_PART_MAIN | LV_STATE_DEFAULT);
+    // Pressed
+    lv_obj_set_style_bg_color(ui_Button1,     MA_PANEL,      LV_PART_MAIN | LV_STATE_PRESSED);
+    lv_obj_set_style_border_opa(ui_Button1,   200,           LV_PART_MAIN | LV_STATE_PRESSED);
+    // Checked (gripper open)
+    lv_obj_set_style_bg_color(ui_Button1,     lv_color_hex(0x011428), LV_PART_MAIN | LV_STATE_CHECKED);
+    lv_obj_set_style_border_color(ui_Button1, MA_TEAL,                LV_PART_MAIN | LV_STATE_CHECKED);
+    lv_obj_set_style_border_opa(ui_Button1,   180,                    LV_PART_MAIN | LV_STATE_CHECKED);
+    // Disabled — 40% opacity cooldown fade
+    lv_obj_set_style_opa(ui_Button1, 102, LV_STATE_DISABLED);
+
+    ui_Label1 = lv_label_create(ui_Button1);
+    lv_obj_set_size(ui_Label1, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_align(ui_Label1, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label1, "TOGGLE GRIPPER");
+    lv_obj_set_style_text_color(ui_Label1,        MA_BLUE_LIGHT, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_letter_space(ui_Label1, 3,             LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // ── Bottom bar ───────────────────────────────────────────────────
+    lv_obj_t *bottombar = lv_obj_create(ui_Screen1);
+    lv_obj_set_size(bottombar, 800, 22);
+    lv_obj_set_pos(bottombar, 0, 458);
+    lv_obj_clear_flag(bottombar, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_color(bottombar,   MA_BG,  LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(bottombar,     255,    LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(bottombar,     0,      LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(bottombar,    0,      LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_side(bottombar,  LV_BORDER_SIDE_TOP, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(bottombar, 1,    LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(bottombar, MA_BLUE, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(bottombar,   25,   LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t *event_lbl = lv_label_create(bottombar);
+    lv_label_set_text(event_lbl, "Dean's Lunch Event  2025");
+    lv_obj_set_pos(event_lbl, 16, 3);
+    lv_obj_set_style_text_color(event_lbl, MA_DIM, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t *mac_lbl = lv_label_create(bottombar);
+    lv_label_set_text(mac_lbl, "70:4B:CA:26:DB:3C");
+    lv_obj_set_pos(mac_lbl, 630, 3);
+    lv_obj_set_style_text_color(mac_lbl, MA_DIM, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // ── Event callbacks ──────────────────────────────────────────────
+    lv_obj_add_event_cb(ui_Action1, ui_event_Action1, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Action2, ui_event_Action2, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Action3, ui_event_Action3, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Action4, ui_event_Action4, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Button1, ui_event_Button1, LV_EVENT_ALL, NULL);
+
+    uic_arm_close = ui_arm_close;
+    uic_arm_open  = ui_arm_open;
 }
-if ( event_code == LV_EVENT_VALUE_CHANGED &&  !lv_obj_has_state(target,LV_STATE_CHECKED)  ) {
-      _ui_flag_modify( ui_arm_close, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
-      _ui_flag_modify( ui_arm_open, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
-      close_gripper( e );
-}
-}
 
-// build funtions
-
-void ui_Screen1_screen_init(void)
-{
-ui_Screen1 = lv_obj_create(NULL);
-lv_obj_clear_flag( ui_Screen1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-
-ui_Panel1 = lv_obj_create(ui_Screen1);
-lv_obj_set_width( ui_Panel1, 350);
-lv_obj_set_height( ui_Panel1, 450);
-lv_obj_set_x( ui_Panel1, -209 );
-lv_obj_set_y( ui_Panel1, 0 );
-lv_obj_set_align( ui_Panel1, LV_ALIGN_CENTER );
-lv_obj_clear_flag( ui_Panel1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-
-ui_Action1 = lv_btn_create(ui_Panel1);
-lv_obj_set_width( ui_Action1, 150);
-lv_obj_set_height( ui_Action1, 200);
-lv_obj_set_x( ui_Action1, -85 );
-lv_obj_set_y( ui_Action1, -110 );
-lv_obj_set_align( ui_Action1, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Action1, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Action1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-
-ui_Image1 = lv_img_create(ui_Action1);
-lv_img_set_src(ui_Image1, &ui_img_2043791660);
-lv_obj_set_width( ui_Image1, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Image1, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_align( ui_Image1, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Image1, LV_OBJ_FLAG_ADV_HITTEST );   /// Flags
-lv_obj_clear_flag( ui_Image1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_img_set_angle(ui_Image1,-100);
-lv_img_set_zoom(ui_Image1,100);
-lv_obj_set_style_img_recolor(ui_Image1, lv_color_hex(0xFFFFFF), LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_img_recolor_opa(ui_Image1, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-ui_Action2 = lv_btn_create(ui_Panel1);
-lv_obj_set_width( ui_Action2, 150);
-lv_obj_set_height( ui_Action2, 200);
-lv_obj_set_x( ui_Action2, 85 );
-lv_obj_set_y( ui_Action2, -110 );
-lv_obj_set_align( ui_Action2, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Action2, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Action2, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-
-ui_Image2 = lv_img_create(ui_Action2);
-lv_img_set_src(ui_Image2, &ui_img_195482244);
-lv_obj_set_width( ui_Image2, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Image2, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_align( ui_Image2, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Image2, LV_OBJ_FLAG_ADV_HITTEST );   /// Flags
-lv_obj_clear_flag( ui_Image2, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_img_set_zoom(ui_Image2,90);
-lv_obj_set_style_img_recolor(ui_Image2, lv_color_hex(0xFFFFFF), LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_img_recolor_opa(ui_Image2, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-ui_Action3 = lv_btn_create(ui_Panel1);
-lv_obj_set_width( ui_Action3, 150);
-lv_obj_set_height( ui_Action3, 200);
-lv_obj_set_x( ui_Action3, -85 );
-lv_obj_set_y( ui_Action3, 110 );
-lv_obj_set_align( ui_Action3, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Action3, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Action3, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-
-ui_Image3 = lv_img_create(ui_Action3);
-lv_img_set_src(ui_Image3, &ui_img_swap_png);
-lv_obj_set_width( ui_Image3, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Image3, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_align( ui_Image3, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Image3, LV_OBJ_FLAG_ADV_HITTEST );   /// Flags
-lv_obj_clear_flag( ui_Image3, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_img_set_zoom(ui_Image3,250);
-lv_obj_set_style_img_recolor(ui_Image3, lv_color_hex(0xFFFFFF), LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_img_recolor_opa(ui_Image3, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-ui_Action4 = lv_btn_create(ui_Panel1);
-lv_obj_set_width( ui_Action4, 150);
-lv_obj_set_height( ui_Action4, 200);
-lv_obj_set_x( ui_Action4, 85 );
-lv_obj_set_y( ui_Action4, 110 );
-lv_obj_set_align( ui_Action4, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Action4, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Action4, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-
-ui_Image4 = lv_img_create(ui_Action4);
-lv_img_set_src(ui_Image4, &ui_img_1842574513);
-lv_obj_set_width( ui_Image4, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Image4, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_align( ui_Image4, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Image4, LV_OBJ_FLAG_ADV_HITTEST );   /// Flags
-lv_obj_clear_flag( ui_Image4, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_img_set_zoom(ui_Image4,110);
-lv_obj_set_style_img_recolor(ui_Image4, lv_color_hex(0xFFFFFF), LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_img_recolor_opa(ui_Image4, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-ui_arm_close = lv_img_create(ui_Screen1);
-lv_img_set_src(ui_arm_close, &ui_img_closesmall3_png);
-lv_obj_set_width( ui_arm_close, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_arm_close, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_arm_close, 180 );
-lv_obj_set_y( ui_arm_close, 77 );
-lv_obj_set_align( ui_arm_close, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_arm_close, LV_OBJ_FLAG_ADV_HITTEST );   /// Flags
-lv_obj_clear_flag( ui_arm_close, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_img_set_zoom(ui_arm_close,600);
-
-ui_arm_open = lv_img_create(ui_Screen1);
-lv_img_set_src(ui_arm_open, &ui_img_opensmall3_png);
-lv_obj_set_width( ui_arm_open, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_arm_open, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_arm_open, 181 );
-lv_obj_set_y( ui_arm_open, 3 );
-lv_obj_set_align( ui_arm_open, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_arm_open, LV_OBJ_FLAG_HIDDEN | LV_OBJ_FLAG_ADV_HITTEST );   /// Flags
-lv_obj_clear_flag( ui_arm_open, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_img_set_zoom(ui_arm_open,700);
-
-ui_Button1 = lv_btn_create(ui_Screen1);
-lv_obj_set_width( ui_Button1, 169);
-lv_obj_set_height( ui_Button1, 50);
-lv_obj_set_x( ui_Button1, 184 );
-lv_obj_set_y( ui_Button1, 184 );
-lv_obj_set_align( ui_Button1, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button1, LV_OBJ_FLAG_CHECKABLE | LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-
-ui_Label1 = lv_label_create(ui_Button1);
-lv_obj_set_width( ui_Label1, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label1, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_align( ui_Label1, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label1,"Toggle Gripper");
-
-ui_Image5 = lv_img_create(ui_Screen1);
-lv_img_set_src(ui_Image5, &ui_img_malogo_png);
-lv_obj_set_width( ui_Image5, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Image5, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Image5, 345 );
-lv_obj_set_y( ui_Image5, -190 );
-lv_obj_set_align( ui_Image5, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Image5, LV_OBJ_FLAG_ADV_HITTEST );   /// Flags
-lv_obj_clear_flag( ui_Image5, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_img_set_zoom(ui_Image5,200);
-lv_obj_set_style_radius(ui_Image5, 1000, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_bg_color(ui_Image5, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Image5, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-lv_obj_add_event_cb(ui_Action1, ui_event_Action1, LV_EVENT_ALL, NULL);
-lv_obj_add_event_cb(ui_Action2, ui_event_Action2, LV_EVENT_ALL, NULL);
-lv_obj_add_event_cb(ui_Action3, ui_event_Action3, LV_EVENT_ALL, NULL);
-lv_obj_add_event_cb(ui_Action4, ui_event_Action4, LV_EVENT_ALL, NULL);
-lv_obj_add_event_cb(ui_Button1, ui_event_Button1, LV_EVENT_ALL, NULL);
-uic_arm_close = ui_arm_close;
-uic_arm_open = ui_arm_open;
-
-}
-
-void ui_Screen1_screen_destroy(void)
-{
-   if (ui_Screen1) lv_obj_del(ui_Screen1);
-
-// NULL screen variables
-ui_Screen1= NULL;
-ui_Panel1= NULL;
-ui_Action1= NULL;
-ui_Image1= NULL;
-ui_Action2= NULL;
-ui_Image2= NULL;
-ui_Action3= NULL;
-ui_Image3= NULL;
-ui_Action4= NULL;
-ui_Image4= NULL;
-uic_arm_close= NULL;
-ui_arm_close= NULL;
-uic_arm_open= NULL;
-ui_arm_open= NULL;
-ui_Button1= NULL;
-ui_Label1= NULL;
-ui_Image5= NULL;
-
+void ui_Screen1_screen_destroy(void) {
+    if (ui_Screen1) lv_obj_del(ui_Screen1);
+    ui_Screen1  = NULL; ui_Panel1  = NULL;
+    ui_Action1  = NULL; ui_Image1  = NULL;
+    ui_Action2  = NULL; ui_Image2  = NULL;
+    ui_Action3  = NULL; ui_Image3  = NULL;
+    ui_Action4  = NULL; ui_Image4  = NULL;
+    uic_arm_close = NULL; ui_arm_close = NULL;
+    uic_arm_open  = NULL; ui_arm_open  = NULL;
+    ui_Button1  = NULL; ui_Label1  = NULL;
+    ui_Image5   = NULL; ui_GripperStateLabel = NULL;
 }
