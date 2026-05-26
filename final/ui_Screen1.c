@@ -59,7 +59,7 @@ if ( event_code == LV_EVENT_VALUE_CHANGED ) {
         if (gripper_btn_timer != NULL) {
             lv_timer_del(gripper_btn_timer);
         }
-        gripper_btn_timer = lv_timer_create(gripper_btn_enable_timer_cb, 3000, NULL);
+        gripper_btn_timer = lv_timer_create(gripper_btn_enable_timer_cb, 200, NULL);
     }
 }
 

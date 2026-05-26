@@ -11,7 +11,7 @@
 using namespace esp_panel::drivers;
 using namespace esp_panel::board;
 
-uint8_t broadcastAddress[] = {0x70, 0x4b, 0xca, 0x26, 0xdb, 0x3c};
+uint8_t broadcastAddress[] = {0x70, 0x4b, 0xca, 0x26, 0x01, 0xc4};
 
 /**
  * To use the built-in examples and demos of LVGL uncomment the includes below respectively.
