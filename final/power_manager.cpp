@@ -29,7 +29,7 @@ static bool touch_is_down() {
     // until GT911 asserts it LOW (touch event = wake trigger).
     rtc_gpio_pullup_en(kTouchIntPin);
     rtc_gpio_pulldown_dis(kTouchIntPin);
-    esp_deep_sleep_enable_gpio_wakeup(1ULL << kTouchIntPin, ESP_GPIO_WAKEUP_GPIO_LOW);
+    esp_sleep_enable_ext0_wakeup(kTouchIntPin, 0); // 0 = wake on LOW
 
     Serial.println("Entering deep sleep. Touch screen to wake.");
     Serial.flush();
