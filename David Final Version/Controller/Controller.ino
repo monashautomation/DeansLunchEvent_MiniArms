@@ -18,7 +18,7 @@ static Board *board = nullptr;
 // ===============================
 // Pair Configuration
 // ===============================
-const uint8_t PAIR_NUMBER = 1; // Change 1-12
+const uint8_t PAIR_NUMBER = 10; // Change 1-12
 
 // Controller MAC
 uint8_t controllerMAC[] = {
@@ -242,7 +242,7 @@ void setup()
     } else {
         Serial.println("Warning: Backlight control not found");
     }
-
+    
     power_manager_init(board);
     Serial.println("Hold screen for 2s to sleep. Touch to wake.");
 }
