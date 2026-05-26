@@ -33,6 +33,7 @@ extern void ui_event_Button1( lv_event_t * e);
 extern lv_obj_t *ui_Button1;
 extern lv_obj_t *ui_Label1;
 extern lv_obj_t *ui_Image5;
+extern lv_obj_t *ui_ShutdownBtn;
 // CUSTOM VARIABLES
 extern lv_obj_t *uic_arm_close;
 extern lv_obj_t *uic_arm_open;

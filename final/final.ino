@@ -108,18 +108,24 @@ extern "C" {
 
     void close_gripper(lv_event_t * e)
     {
-        
+
         Serial.println("Button Pressed! Sending data to other ESP...");
         const char * message = "closegripper";
-        
+
         // NEW: Send the message via ESP-NOW
         esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) message, strlen(message));
-        
+
         if (result == ESP_OK) {
             Serial.println("Sent with success");
         } else {
             Serial.println("Error sending the data");
         }
+    }
+
+    void shutdown_event(lv_event_t * e)
+    {
+        Serial.println("Shutdown button pressed.");
+        power_manager_sleep();
     }
 }
 

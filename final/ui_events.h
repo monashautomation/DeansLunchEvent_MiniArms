@@ -16,6 +16,7 @@ void action3_event(lv_event_t * e);
 void action4_event(lv_event_t * e);
 void open_gripper(lv_event_t * e);
 void close_gripper(lv_event_t * e);
+void shutdown_event(lv_event_t * e);
 
 #ifdef __cplusplus
 } /*extern "C"*/

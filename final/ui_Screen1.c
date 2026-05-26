@@ -7,7 +7,7 @@
 
 lv_obj_t *uic_arm_open;
 lv_obj_t *uic_arm_close;
-lv_obj_t *ui_Screen1 = NULL;lv_obj_t *ui_Panel1 = NULL;lv_obj_t *ui_Action1 = NULL;lv_obj_t *ui_Image1 = NULL;lv_obj_t *ui_Action2 = NULL;lv_obj_t *ui_Image2 = NULL;lv_obj_t *ui_Action3 = NULL;lv_obj_t *ui_Image3 = NULL;lv_obj_t *ui_Action4 = NULL;lv_obj_t *ui_Image4 = NULL;lv_obj_t *ui_arm_close = NULL;lv_obj_t *ui_arm_open = NULL;lv_obj_t *ui_Button1 = NULL;lv_obj_t *ui_Label1 = NULL;lv_obj_t *ui_Image5 = NULL;
+lv_obj_t *ui_Screen1 = NULL;lv_obj_t *ui_Panel1 = NULL;lv_obj_t *ui_Action1 = NULL;lv_obj_t *ui_Image1 = NULL;lv_obj_t *ui_Action2 = NULL;lv_obj_t *ui_Image2 = NULL;lv_obj_t *ui_Action3 = NULL;lv_obj_t *ui_Image3 = NULL;lv_obj_t *ui_Action4 = NULL;lv_obj_t *ui_Image4 = NULL;lv_obj_t *ui_arm_close = NULL;lv_obj_t *ui_arm_open = NULL;lv_obj_t *ui_Button1 = NULL;lv_obj_t *ui_Label1 = NULL;lv_obj_t *ui_Image5 = NULL;lv_obj_t *ui_ShutdownBtn = NULL;
 
 static lv_timer_t *gripper_btn_timer = NULL;
 
@@ -73,6 +73,12 @@ if ( event_code == LV_EVENT_VALUE_CHANGED &&  !lv_obj_has_state(target,LV_STATE_
       _ui_flag_modify( ui_arm_open, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
       close_gripper( e );
 }
+}
+
+static void ui_event_ShutdownBtn(lv_event_t *e) {
+    if (lv_event_get_code(e) == LV_EVENT_CLICKED) {
+        shutdown_event(e);
+    }
 }
 
 // build funtions
@@ -222,6 +228,24 @@ lv_obj_set_style_radius(ui_Image5, 1000, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_bg_color(ui_Image5, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT );
 lv_obj_set_style_bg_opa(ui_Image5, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 
+ui_ShutdownBtn = lv_btn_create(ui_Screen1);
+lv_obj_set_width(ui_ShutdownBtn, 55);
+lv_obj_set_height(ui_ShutdownBtn, 35);
+lv_obj_set_align(ui_ShutdownBtn, LV_ALIGN_BOTTOM_RIGHT);
+lv_obj_set_x(ui_ShutdownBtn, -10);
+lv_obj_set_y(ui_ShutdownBtn, -10);
+lv_obj_clear_flag(ui_ShutdownBtn, LV_OBJ_FLAG_SCROLLABLE);
+lv_obj_set_style_bg_color(ui_ShutdownBtn, lv_color_hex(0x441111), LV_PART_MAIN | LV_STATE_DEFAULT);
+lv_obj_set_style_bg_opa(ui_ShutdownBtn, 200, LV_PART_MAIN | LV_STATE_DEFAULT);
+lv_obj_set_style_radius(ui_ShutdownBtn, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+{
+    lv_obj_t *lbl = lv_label_create(ui_ShutdownBtn);
+    lv_label_set_text(lbl, LV_SYMBOL_POWER);
+    lv_obj_set_align(lbl, LV_ALIGN_CENTER);
+    lv_obj_set_style_text_color(lbl, lv_color_hex(0xFF6666), LV_PART_MAIN | LV_STATE_DEFAULT);
+}
+lv_obj_add_event_cb(ui_ShutdownBtn, ui_event_ShutdownBtn, LV_EVENT_ALL, NULL);
+
 lv_obj_add_event_cb(ui_Action1, ui_event_Action1, LV_EVENT_ALL, NULL);
 lv_obj_add_event_cb(ui_Action2, ui_event_Action2, LV_EVENT_ALL, NULL);
 lv_obj_add_event_cb(ui_Action3, ui_event_Action3, LV_EVENT_ALL, NULL);
@@ -254,5 +278,6 @@ ui_arm_open= NULL;
 ui_Button1= NULL;
 ui_Label1= NULL;
 ui_Image5= NULL;
+ui_ShutdownBtn= NULL;
 
 }
