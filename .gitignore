@@ -1,0 +1,11 @@
+# Per-session personal overrides — must never be committed
+.claude/settings.local.json
+.claude/CLAUDE.local.md
+.claude/audit.log
+
+# macOS
+.DS_Store
+
+# Generated UI assets (large binary blobs)
+final/ui_img_*.c
+MASTERCONTROLLER/master/ui_img_*.c
