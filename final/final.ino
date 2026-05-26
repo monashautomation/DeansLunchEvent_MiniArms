@@ -4,12 +4,15 @@
 #include <lvgl.h>
 #include "lvgl_v8_port.h"
 #include "ui.h"
+#include "power_manager.h"
 
 #include <esp_now.h>
 #include <WiFi.h>
 
 using namespace esp_panel::drivers;
 using namespace esp_panel::board;
+
+static Board *board = nullptr;
 
 uint8_t broadcastAddress[] = {0x70, 0x4b, 0xca, 0x26, 0xdb, 0x3c};
 
@@ -149,7 +152,7 @@ void setup()
     Serial.println("ESP-NOW initialized");
 
     Serial.println("Initializing board");
-    Board *board = new Board();
+    board = new Board();
     board->init();
 
     #if LVGL_PORT_AVOID_TEARING_MODE
@@ -194,10 +197,13 @@ void setup()
     } else {
         Serial.println("Warning: Backlight control not found");
     }
+
+    power_manager_init(board);
+    Serial.println("Hold screen for 2s to sleep. Touch to wake.");
 }
 
 void loop()
 {
-    Serial.println("IDLE loop");
-    delay(1000);
+    power_manager_tick();
+    delay(20);
 }
